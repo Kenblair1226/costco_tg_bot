@@ -1,0 +1,61 @@
+image: golang:latest
+
+.go-cache:
+    variables:
+        GOPATH: $CI_PROJECT_DIR/.go
+    cache:
+      paths:
+        - .go/pkg/mod/
+
+variables:
+  OUTPUT_NAME: __bin__/$CI_PROJECT_NAME
+
+stages:
+  - lint
+#   - test
+  - build
+  - release
+
+lint:
+    image: golangci/golangci-lint:latest
+    stage: lint
+    extends: .go-cache
+    allow_failure: false
+    script:
+      - golangci-lint run -v
+
+# test:
+#   stage: test
+#   script:
+#     - go fmt $(go list ./... | grep -v /vendor/)
+#     - go vet $(go list ./... | grep -v /vendor/)
+#     - go test -race $(go list ./... | grep -v /vendor/)
+
+# build:
+#   stage: build
+#   script:
+#     - mkdir -p $OUTPUT_NAME
+#     - go build -o $OUTPUT_NAME ./...
+#   artifacts:
+#     paths:
+#       - $OUTPUT_NAME
+
+build_image:
+  image: docker:stable
+  stage: build
+  services:
+    - docker:dind
+  script:
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        tag=""
+        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
+      else
+        tag=":$CI_COMMIT_REF_SLUG"
+        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+      fi
+    - docker build --pull -t "$CI_PROJECT_NAME${tag}" .
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - Dockerfile
