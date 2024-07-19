@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -73,7 +74,7 @@ func fetchProducts() {
 
 		currentPage := 0
 		for {
-			url := fmt.Sprintf(baseURL, keyword, currentPage)
+			url := fmt.Sprintf(baseURL, url.QueryEscape(keyword), currentPage)
 			products, pagination := fetchProductsFromPage(url)
 
 			totalProducts += len(products)
