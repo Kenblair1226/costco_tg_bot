@@ -22,7 +22,7 @@ lint:
     extends: .go-cache
     allow_failure: false
     script:
-      - golangci-lint run -v --no-config
+      - golangci-lint run -v --show-stats --no-config --modules-download-mode readonly
 
 # test:
 #   stage: test
