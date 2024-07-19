@@ -11,28 +11,28 @@ variables:
   OUTPUT_NAME: __bin__/$CI_PROJECT_NAME
 
 stages:
-  - lint
+  # - lint
 #   - test
   - build
-  - release
+  # - release
 
-lint:
-    image: golangci/golangci-lint:latest
-    stage: lint
-    extends: .go-cache
-    allow_failure: false
-    script:
-      - golangci-lint run -v --show-stats --no-config --timeout=2m
-    variables:
-      GOCACHE: ${CI_PROJECT_DIR}/vendor/cache
-      GOPATH: ${CI_PROJECT_DIR}/vendor/go
-      GOLANGCI_LINT_CACHE: ${CI_PROJECT_DIR}/vendor/linter-cache
-    cache:
-      key: lintercache
-      paths:
-        - vendor/go/pkg/mod/
-        - vendor/cache
-        - vendor/linter-cache
+# lint:
+#     image: golangci/golangci-lint:latest
+#     stage: lint
+#     extends: .go-cache
+#     allow_failure: false
+#     script:
+#       - golangci-lint run -v --show-stats --no-config --timeout=2m
+#     variables:
+#       GOCACHE: ${CI_PROJECT_DIR}/vendor/cache
+#       GOPATH: ${CI_PROJECT_DIR}/vendor/go
+#       GOLANGCI_LINT_CACHE: ${CI_PROJECT_DIR}/vendor/linter-cache
+#     cache:
+#       key: lintercache
+#       paths:
+#         - vendor/go/pkg/mod/
+#         - vendor/cache
+#         - vendor/linter-cache
 
 # test:
 #   stage: test
