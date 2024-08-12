@@ -11,8 +11,6 @@ stages:
   - build
   - release
 
-image: golang:latest
-
 .go-cache:
     variables:
         GOPATH: $CI_PROJECT_DIR/.go
