@@ -9,7 +9,7 @@ stages:
   # - lint
 #   - test
   - build
-  # - release
+  - release
 
 image: golang:latest
 
@@ -55,10 +55,7 @@ variables:
 
 
 build_image:
-  image: docker:stable
   stage: build
-  services:
-    - docker:dind
   script:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
