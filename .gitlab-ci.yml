@@ -57,12 +57,10 @@ build_image:
   script:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      exists:
-        - Dockerfile
   only:
     - main
+    - develop
+    - /^release/’
 
 release_image:
   stage: release
