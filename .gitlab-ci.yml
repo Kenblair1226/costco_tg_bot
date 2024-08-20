@@ -60,7 +60,7 @@ build_image:
   only:
     - main
     - develop
-    - /^release/’
+    - tags
 
 release_image:
   stage: release
