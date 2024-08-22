@@ -83,7 +83,8 @@ func handleTelegramUpdates() {
 			if update.Message.IsCommand() {
 				switch update.Message.Command() {
 				case "q":
-					listProducts(chatID, args)
+					handleAutocompleteQuery(chatID, args)
+					// listProducts(chatID, args)
 				case "add":
 					addKeyword(chatID, args)
 				case "remove":
@@ -103,6 +104,8 @@ func handleTelegramUpdates() {
 			}
 		} else if update.InlineQuery != nil {
 			handleInlineQuery(update.InlineQuery)
+		} else if update.CallbackQuery != nil {
+			handleCallbackQuery(chatID, update.CallbackQuery)
 		}
 	}
 }
@@ -318,4 +321,71 @@ func handleInlineQuery(inlineQuery *tgbotapi.InlineQuery) {
 	if _, err := bot.Request(inlineConf); err != nil {
 		log.Printf("Failed to send inline query response: %v", err)
 	}
+}
+
+
+func handleAutocompleteQuery(message *tgbotapi.Message) {
+	db, err := sql.Open("sqlite3", dbName)
+	if err != nil {
+		log.Fatalf("Failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT keyword FROM user_keywords WHERE chat_id = ?", chatID)
+	if err != nil {
+		log.Printf("Failed to query keywords: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	var keywords []string
+	for rows.Next() {
+		var keyword string
+		if err := rows.Scan(&keyword); err != nil {
+			log.Printf("Failed to scan keyword: %v", err)
+			continue
+		}
+		keywords = append(keywords, keyword)
+	}
+
+	if len(keywords) == 0 {
+		msg := tgbotapi.NewMessage(chatID, "No keywords found. Type your keyword.")
+		bot.Send(msg)
+	} else {
+
+		// Create a slice to hold our rows of buttons
+		var rows [][]tgbotapi.InlineKeyboardButton
+
+		// Determine how many buttons per row (e.g., 3)
+		buttonsPerRow := 3
+
+		// Create and add buttons
+		var currentRow []tgbotapi.InlineKeyboardButton
+		for i, keyword := range keywords {
+			currentRow = append(currentRow, tgbotapi.NewInlineKeyboardButtonData(i, keyword))
+			
+			// If we've filled a row or this is the last item, add the row to our rows slice
+			if len(currentRow) == buttonsPerRow || i == len(keywords)-1 {
+				rows = append(rows, currentRow)
+				currentRow = []tgbotapi.InlineKeyboardButton{}
+			}
+		}
+
+		// Create the keyboard
+		keyboard := tgbotapi.NewInlineKeyboardMarkup(rows...)
+
+		msg := tgbotapi.NewMessage(chatID, "Choose a keyword:")
+		msg.ReplyMarkup = keyboard
+
+		bot.Send(msg)
+	}
+}
+
+func handleCallbackQuery(chatID int64, query *tgbotapi.CallbackQuery) {    
+
+    callback := tgbotapi.NewCallback(query.ID, query.data)
+    bot.Request(callback)
+
+	listProducts(chatID, query.data);
+
 }
