@@ -23,7 +23,6 @@ variables:
     # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
-  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
 # lint:
 #     image: golangci/golangci-lint:latest
@@ -56,7 +55,7 @@ build_image:
   script:
     - docker pull $CI_REGISTRY_IMAGE:latest || true
     - docker build --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from $CI_REGISTRY_IMAGE:latest --tag $CI_REGISTRY_IMAGE:latest .
-    - docker push $$CI_REGISTRY_IMAGE:$latest
+    - docker push $$CI_REGISTRY_IMAGE:latest
 
 release_image:
   stage: release
